@@ -27,10 +27,9 @@ end
 function BaseWindow:update_buffer_content()
   vim.api.nvim_buf_clear_namespace(self.buffer_number, self.namespace_id, 0, -1)
 
-  local content = vim.tbl_map(
-    function(v) return v:gsub("\n"," ") end,
-    self:get_content()
-  )
+  local content = vim.tbl_map(function(v)
+    return v:gsub('\n', ' ')
+  end, self:get_content())
 
   -- Unset and set the filtype option removes temporally th read-only property
   vim.api.nvim_buf_set_option(self.buffer_number, 'filetype', '')
@@ -74,9 +73,8 @@ function BaseWindow:open(window_configuration_options)
     return
   end
 
-  local window_configuration = self:get_window_configuration(
-    window_configuration_options
-  )
+  local window_configuration =
+    self:get_window_configuration(window_configuration_options)
 
   if self.window_number == -1 then
     self.window_number = vim.api.nvim_open_win(
@@ -97,20 +95,22 @@ function BaseWindow:after_opened()
   return
 end
 
-function BaseWindow:set_window_width(width)
-  pcall(vim.api.nvim_win_set_width, self.window_number, width)
-end
-
 function BaseWindow:get_option(name)
   if self.window_options == nil then
     return nil
   else
     local option = self.window_options[name]
 
-    -- Special treatment to get absolute positions. Ugly but...
-    if name == 'row' or name == 'col' then
-      return option[false]
+    -- Ensure option is a table before trying to index it
+    if type(option) == 'table' then
+      -- Special treatment to get absolute positions. Ugly but...
+      if name == 'row' or name == 'col' then
+        return option[false]
+      else
+        return option
+      end
     else
+      -- Return the option directly if it's not a table
       return option
     end
   end
